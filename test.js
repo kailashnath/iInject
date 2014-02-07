@@ -73,7 +73,8 @@ suite('di#remove', function () {
 
 suite('di#inject', function () {
     setup(function () {
-        var self = this;
+        var self = this,
+            shared = {};
         this.db = function () {
             return 'database';
         };
@@ -86,6 +87,10 @@ suite('di#inject', function () {
         this.developer = function (employee) {
             return employee? 'developer': null;
         };
+
+        this.singleton = function () {
+            return self.shared;
+        };
         di.configure(function () {
             this.bind('number', 100);
             this.bind('string', 'kailash');
@@ -93,6 +98,7 @@ suite('di#inject', function () {
             this.bind('user', self.user);
             this.bind('employee', self.employee);
             this.bind('developer', self.developer);
+            this.bind('singleton', self.singleton, {singleton: true});
         });
     });
     test('should inject number if bound to a number', function () {
@@ -113,6 +119,10 @@ suite('di#inject', function () {
         var employee = di.inject('employee');
         assert.isTrue(employee);
         assert.strictEqual('developer', di.inject('developer'));
+    });
+
+    test('should not create a new object if injecting a singleton function', function () {
+        assert.strictEqual(this.shared, di.inject('singleton'));
     });
 
 });

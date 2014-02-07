@@ -2,7 +2,7 @@
     var injectables = {};
 
     var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
-    function Injectable(name, func) {
+    function Injectable(name, func, options) {
         this.isSticky = false;
 
         this.resolveDependencies = function () {
@@ -33,8 +33,9 @@
             if (typeof func === "object" || [String, Number].indexOf(func.constructor) > -1) {
                 return func;
             } else {
-                var skeleton = Object.create(func.prototype);
-                return func.apply(skeleton, this.resolveDependencies());
+                var dependencies = this.resolveDependencies(),
+                    scope = options && options.singleton? func: Object.create(func.prototype);
+                return func.apply(scope, dependencies);
             }
         };
     };
@@ -45,12 +46,12 @@
             return obj.constructor === Injectable;
         };
 
-        this.bind = function (name, func) {
+        this.bind = function (name, func, options) {
             if (!(name && func) || typeof(name) !== 'string') {
                 return false;
             }
 
-            injectables[name] = new Injectable(name, func);
+            injectables[name] = new Injectable(name, func, options);
             return true;
         };
 
