@@ -1,0 +1,2 @@
+var Connection = function () {
+
