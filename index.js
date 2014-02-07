@@ -29,8 +29,8 @@
             return dependencies;
         };
 
-        this.invoke = function (asnewObject) {
-            if (typeof func === "object" || func.constructor === String) {
+        this.invoke = function () {
+            if (typeof func === "object" || [String, Number].indexOf(func.constructor) > -1) {
                 return func;
             } else {
                 var skeleton = Object.create(func.prototype);
@@ -45,25 +45,13 @@
             return obj.constructor === Injectable;
         };
 
-        var bindSticky = function (name, func, is_sticky) {
-            var injectable = new Injectable(name, func);
-            injectable.isSticky = (!!is_sticky);
-
-            // if this is a sticky bind, update the collection
-            if (is_sticky) {
-                injectables[name] = injectable;
-            } else {
-                var exists = injectables[name];
-                // if already a bind exists and it's not a sticky bind or
-                // if the bind doesn't exist
-                if ((exists && !exists.isSticky) || !exists) {
-                    injectables[name] = injectable;
-                }
+        this.bind = function (name, func) {
+            if (!(name && func) || typeof(name) !== 'string') {
+                return false;
             }
-        };
 
-        this.bind = function (name, func, is_sticky) {
-            bindSticky(name, func, is_sticky);
+            injectables[name] = new Injectable(name, func);
+            return true;
         };
 
         this.resolve = function (name) {
@@ -73,45 +61,28 @@
                 }
                 return injectables[name] || require(name);
             } catch (e) {
-                console.log(e.stack);
                 return name;
             }
         };
-
-        this.inject = function (name, as_new_object) {
-            var resolved = this.resolve(name);
-            if (isInjectable(resolved)) {
-                return as_new_object === true ? resolved.invokeNewObject(): resolved.invoke();
-            }
-            return resolved;
-        };
-
-        this.injectNew = function (name) {
-            return this.inject(name, true);
-        };
-
-        this.configure = function (module_loader) {
-            module_loader.call(this);
-        };
-
-        this.release = function () {
-            delete injectables;
-            injectables = {};
-        }
     };
 
     var container = new DIContainer();
 
     var configure = function (func) {
+        remove();
         func.call(container);
     },
-    inject = function (name, asNewObject) {
+    inject = function (name) {
         var resolved = container.resolve(name);
         if (resolved.constructor === Injectable) {
-            return resolved.invoke(asNewObject === true);
+            return resolved.invoke();
         }
         return resolved;
+    },
+    remove = function (name) {
+        name? delete injectables[name]: delete injectables;
+        injectables = {};
     };
 
-    module.exports = {configure: configure, inject: inject};
+    module.exports = {configure: configure, inject: inject, remove: remove};
 }());
