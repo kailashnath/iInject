@@ -1,5 +1,6 @@
 (function () {
-    var injectables = {};
+    var injectables = {},
+    singletons = {};
 
     var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
     function Injectable(name, func, options) {
@@ -33,9 +34,19 @@
             if (typeof func === "object" || [String, Number].indexOf(func.constructor) > -1) {
                 return func;
             } else {
+                var isSingleton = options && options.singleton;
+                if (isSingleton) {
+                    var inst = singletons[name];
+                    if (inst) {
+                        return inst;
+                    }
+                }
                 var dependencies = this.resolveDependencies(),
-                    scope = options && options.singleton? func: Object.create(func.prototype);
-                return func.apply(scope, dependencies);
+                    scope = Object.create(func.prototype);
+                func.apply(scope, dependencies);
+                if (isSingleton)
+                    singletons[name] = scope;
+                return scope;
             }
         };
     };
