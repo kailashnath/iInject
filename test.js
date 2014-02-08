@@ -145,5 +145,23 @@ suite('di#inject', function () {
         assert.strictEqual('kronos', di.inject('sweden').currency);
     });
 
+    test('should inject variables from parent scope if not found in current scope', function () {
+        di.configure(function () {
+            this.bind('user', function (name) { this.name = name;});
+            this.bind('name', 'global');
+        });
+
+        assert.strictEqual('global', di.inject('user').name);
+    });
+
+    test('should inject variables from local scope if found and shouldn\'t be overriden by global scope', function () {
+        di.configure(function () {
+            this.bind('user', function (name) { this.name = name;}).bind('name', 'local');
+            this.bind('name', 'global');
+        });
+
+        assert.strictEqual('local', di.inject('user').name);
+    });
+
 });
 

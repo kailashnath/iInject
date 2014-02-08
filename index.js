@@ -10,19 +10,21 @@
         injectable.name = name;
         injectable.func = func;
         injectable.options = options;
+        injectable.parent = this;
 
         this.injectables[name] = injectable;
         return injectable;
     }
     , resolve = function (name) {
-        try {
-            if (name === '') {
-                return name;
+
+        if (this.injectables) {
+            var obj = this.injectables[name];
+            if (!obj) {
+                return resolve.call(this.parent, name);
             }
-            return this.injectables[name] || require(name);
-        } catch (e) {
-            return name;
+            return obj;
         }
+        return name;
     };
 
     function Injectable() {
@@ -88,13 +90,13 @@
         };
     };
 
-    var parent = new Injectable()
+    var root = new Injectable()
     , configure = function (func) {
         remove();
-        func.call(parent);
+        func.call(root);
     }
     , inject = function (name) {
-        var resolved = resolve.call(parent, name);
+        var resolved = resolve.call(root, name);
         if (resolved.constructor === Injectable) {
             return resolved.invoke();
         }
@@ -102,10 +104,10 @@
     }
     , remove = function (name) {
         if (name) {
-            delete parent.injectables[name];
+            delete root.injectables[name];
         } else {
-            delete parent;
-            parent = new Injectable();
+            delete root;
+            root = new Injectable();
         }
     };
 
