@@ -1,13 +1,36 @@
 (function () {
-    var injectables = {}
-    ,    singletons = {}
-    ,       FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
 
-    function Injectable(name, func, options) {
-        this.isSticky = false;
+    var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m
+
+    , bind = function (name, func, options) {
+        if (!(name && func) || typeof(name) !== 'string') {
+                return null;
+        }
+        var injectable = new Injectable();
+        injectable.name = name;
+        injectable.func = func;
+        injectable.options = options;
+
+        this.injectables[name] = injectable;
+        return injectable;
+    }
+    , resolve = function (name) {
+        try {
+            if (name === '') {
+                return name;
+            }
+            return this.injectables[name] || require(name);
+        } catch (e) {
+            return name;
+        }
+    };
+
+    function Injectable() {
+        this.injectables = {};
+        this.singletons = {};
 
         this.resolveDependencies = function () {
-            var match = func.toString().match(FN_ARGS)
+            var match = this.func.toString().match(FN_ARGS)
             , dependencies = [];
 
             if (!match) {
@@ -17,7 +40,7 @@
             var args = match[1].split(',');
 
             for (var i = 0; i < args.length; i++) {
-                var dependency = container.resolve(args[i])
+                var dependency = resolve.call(this, args[i])
                 ,        value = null;
 
                 if (dependency.constructor === Injectable) {
@@ -31,10 +54,15 @@
         };
 
         this.invoke = function () {
+            var func = this.func
+            , options = this.options;
+
             if (typeof func === "object" || [String, Number].indexOf(func.constructor) > -1) {
                 return func;
             } else {
-                var isSingleton = options && options.singleton;
+                var isSingleton = options && options.singleton
+                , singletons = this.singletons
+                , name = this.name;
 
                 if (isSingleton) {
                     var inst = singletons[name];
@@ -43,8 +71,8 @@
                         return inst;
                     }
                 }
-                var dependencies = this.resolveDependencies(),
-                    scope = Object.create(func.prototype);
+                var dependencies = this.resolveDependencies()
+                , scope = Object.create(func.prototype);
 
                 func.apply(scope, dependencies);
 
@@ -54,42 +82,19 @@
                 return scope;
             }
         };
-    };
-
-
-    function DIContainer () {
-        var isInjectable = function (obj) {
-            return obj.constructor === Injectable;
-        };
 
         this.bind = function (name, func, options) {
-            if (!(name && func) || typeof(name) !== 'string') {
-                return false;
-            }
-
-            injectables[name] = new Injectable(name, func, options);
-            return true;
-        };
-
-        this.resolve = function (name) {
-            try {
-                if (name === '') {
-                    return name;
-                }
-                return injectables[name] || require(name);
-            } catch (e) {
-                return name;
-            }
+            return bind.call(this, name, func, options);
         };
     };
 
-    var container = new DIContainer()
+    var parent = new Injectable()
     , configure = function (func) {
         remove();
-        func.call(container);
+        func.call(parent);
     }
     , inject = function (name) {
-        var resolved = container.resolve(name);
+        var resolved = resolve.call(parent, name);
         if (resolved.constructor === Injectable) {
             return resolved.invoke();
         }
@@ -97,10 +102,10 @@
     }
     , remove = function (name) {
         if (name) {
-            delete injectables[name];
+            delete parent.injectables[name];
         } else {
-            delete injectables;
-            injectables = {};
+            delete parent;
+            parent = new Injectable();
         }
     };
 

@@ -19,20 +19,23 @@ suite('di#configure', function () {
 
     test('#bind should be able to register a string type with either of "string", "int", "function"',
             function () {
-                var bind = null;
                 di.configure(function () {
-                    bind = this.bind;
+                    assert.ok(this.bind('String', 'another dummy'));
+                    assert.ok(this.bind('Integer', 5));
+                    assert.ok(this.bind('Function', function () {}));
+
+                    assert.notOk(this.bind());
+                    assert.notOk(this.bind('fail'));
+                    assert.notOk(this.bind(null, 'fail'));
+                    assert.notOk(this.bind(function () {}, 'failFunc'));
                 });
-
-                assert.isTrue(bind('String', 'another dummy'));
-                assert.isTrue(bind('Integer', 5));
-                assert.isTrue(bind('Function', function () {}));
-
-                assert.isFalse(bind());
-                assert.isFalse(bind('fail'));
-                assert.isFalse(bind(null, 'fail'));
-                assert.isFalse(bind(function () {}, 'failFunc'));
             });
+
+    test('#bind should always allow currying way of binding', function () {
+        di.configure(function () {
+            assert.ok(this.bind('name', 'kailash').bind);
+        });
+    });
 
     test('should always clear the previous mapping when invoked', function () {
         di.configure(function () {
@@ -127,6 +130,19 @@ suite('di#inject', function () {
     test('should not create a new object if injecting a singleton function', function () {
         var inst = di.inject('singleton');
         assert.strictEqual(inst.id(), di.inject('singleton').id());
+    });
+
+    test('should inject variables as per the dependency graph when used nested binding', function () {
+        var CreditCard = function (currency) {
+            this.currency = currency;
+        };
+
+        di.configure(function () {
+            this.bind('india', CreditCard).bind('currency', 'rupees');
+            this.bind('sweden', CreditCard).bind('currency', 'kronos');
+        });
+        assert.strictEqual('rupees', di.inject('india').currency);
+        assert.strictEqual('kronos', di.inject('sweden').currency);
     });
 
 });
