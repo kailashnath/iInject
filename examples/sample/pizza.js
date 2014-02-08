@@ -21,4 +21,3 @@ di.inject('pizzahut').order('cheese', 'master');
 di.inject('pizzahut').order('veggie', 'master');
 di.inject('dominos').order('veggie', 'master');
 
-
