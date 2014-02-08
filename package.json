@@ -1,0 +1,17 @@
+{"url": "https://github.com/kailashnath/iInject",
+"author": {
+    "name": "Kailashnath Reddy",
+    "email": "retadedgeek@gmail.com"
+},
+"name": "iinject",
+"description": "A simple dependency injection framework inspired by Google-guice framework",
+"keyworkd": ["di", "dependency", "injection", "aop"],
+"engines": [{"node": ">= 0.4.0"}],
+"license": "MIT",
+"main": "iInject",
+"repository": {
+    "type": "git",
+    "url": "https://github.com/kailashnath/iInject"
+},
+"version": "0.1.0"
+}
