@@ -1,39 +1,57 @@
 (function () {
 
-    var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m
-
-    , bind = function (name, func, options) {
-        if (!(name && func) || typeof(name) !== 'string') {
-                return null;
-        }
-        var injectable = new Injectable();
-        injectable.name = name;
-        injectable.func = func;
-        injectable.options = options;
-        injectable.parent = this;
-
-        this.injectables[name] = injectable;
-        return injectable;
-    }
-    , resolve = function (name) {
-
-        if (this.injectables) {
-            var obj = this.injectables[name];
-            if (!obj) {
-                return resolve.call(this.parent, name);
+    var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m,
+        bind = function (name, func, options) {
+            if (!(name && func) || typeof(name) !== 'string') {
+                    return null;
             }
-            return obj;
-        }
-        return name;
-    };
+
+            if ([Function, String, Number].indexOf(func.constructor) === -1) {
+                return null;
+            }
+
+            var injectable = new Injectable();
+            injectable.name = name;
+            injectable.func = func;
+            injectable.options = options;
+            injectable.parent = this;
+
+            this.injectables[name] = injectable;
+            return injectable;
+        },
+        resolve = function (name) {
+
+            if (this.injectables) {
+                var obj = this.injectables[name];
+                if (!obj) {
+                    // if not found in current scope go up in the tree
+                    return resolve.call(this.parent, name);
+                }
+                return obj;
+            }
+            return name;
+        };
 
     function Injectable() {
         this.injectables = {};
         this.singletons = {};
 
+        this.release = function (name) {
+            if (name) {
+                delete this.injectables[name];
+                delete this.singletons[name];
+            } else {
+                delete this.injectables;
+                delete this.singletons;
+
+                this.injectables = {};
+                this.singletons = {};
+            }
+        };
+
         this.resolveDependencies = function () {
-            var match = this.func.toString().match(FN_ARGS)
-            , dependencies = [];
+            var match = this.func.toString().match(FN_ARGS),
+                dependencies = [];
 
             if (!match) {
                 return dependencies;
@@ -42,9 +60,10 @@
             var args = match[1].split(',');
 
             for (var i = 0; i < args.length; i++) {
-                var dependency = resolve.call(this, args[i])
-                ,        value = null;
+                var dependency = resolve.call(this, args[i]),
+                    value = null;
 
+                // if dependency is of type Injectable invoke it's dependencies
                 if (dependency.constructor === Injectable) {
                     value = dependency.invoke();
                 } else {
@@ -56,15 +75,15 @@
         };
 
         this.invoke = function () {
-            var func = this.func
-            , options = this.options;
+            var func = this.func,
+                options = this.options;
 
             if (typeof func === "object" || [String, Number].indexOf(func.constructor) > -1) {
                 return func;
             } else {
-                var isSingleton = options && options.singleton
-                , singletons = this.singletons
-                , name = this.name;
+                var isSingleton = options && options.singleton,
+                    singletons = this.singletons,
+                    name = this.name;
 
                 if (isSingleton) {
                     var inst = singletons[name];
@@ -73,8 +92,8 @@
                         return inst;
                     }
                 }
-                var dependencies = this.resolveDependencies()
-                , scope = Object.create(func.prototype);
+                var dependencies = this.resolveDependencies(),
+                    scope = Object.create(func.prototype);
 
                 func.apply(scope, dependencies);
 
@@ -88,28 +107,23 @@
         this.bind = function (name, func, options) {
             return bind.call(this, name, func, options);
         };
-    };
+    }
 
-    var root = new Injectable()
-    , configure = function (func) {
-        remove();
-        func.call(root);
-    }
-    , inject = function (name) {
-        var resolved = resolve.call(root, name);
-        if (resolved.constructor === Injectable) {
-            return resolved.invoke();
-        }
-        return resolved;
-    }
-    , remove = function (name) {
-        if (name) {
-            delete root.injectables[name];
-        } else {
-            delete root;
-            root = new Injectable();
-        }
-    };
+    var root = new Injectable(),
+        configure = function (func) {
+            remove();
+            func.call(root);
+        },
+        inject = function (name) {
+            var resolved = resolve.call(root, name);
+            if (resolved.constructor === Injectable) {
+                return resolved.invoke();
+            }
+            return resolved;
+        },
+        remove = function (name) {
+            root.release(name);
+        };
 
     module.exports = {configure: configure, inject: inject, remove: remove};
 }());
