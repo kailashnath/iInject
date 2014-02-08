@@ -1,14 +1,14 @@
 (function () {
-    var injectables = {},
-    singletons = {};
+    var injectables = {}
+    ,    singletons = {}
+    ,       FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
 
-    var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
     function Injectable(name, func, options) {
         this.isSticky = false;
 
         this.resolveDependencies = function () {
-            var match = func.toString().match(FN_ARGS),
-                dependencies = [];
+            var match = func.toString().match(FN_ARGS)
+            , dependencies = [];
 
             if (!match) {
                 return dependencies;
@@ -17,8 +17,8 @@
             var args = match[1].split(',');
 
             for (var i = 0; i < args.length; i++) {
-                var dependency = container.resolve(args[i]),
-                    value = null;
+                var dependency = container.resolve(args[i])
+                ,        value = null;
 
                 if (dependency.constructor === Injectable) {
                     value = dependency.invoke();
@@ -35,17 +35,22 @@
                 return func;
             } else {
                 var isSingleton = options && options.singleton;
+
                 if (isSingleton) {
                     var inst = singletons[name];
+
                     if (inst) {
                         return inst;
                     }
                 }
                 var dependencies = this.resolveDependencies(),
                     scope = Object.create(func.prototype);
+
                 func.apply(scope, dependencies);
+
                 if (isSingleton)
                     singletons[name] = scope;
+
                 return scope;
             }
         };
@@ -78,22 +83,25 @@
         };
     };
 
-    var container = new DIContainer();
-
-    var configure = function (func) {
+    var container = new DIContainer()
+    , configure = function (func) {
         remove();
         func.call(container);
-    },
-    inject = function (name) {
+    }
+    , inject = function (name) {
         var resolved = container.resolve(name);
         if (resolved.constructor === Injectable) {
             return resolved.invoke();
         }
         return resolved;
-    },
-    remove = function (name) {
-        name? delete injectables[name]: delete injectables;
-        injectables = {};
+    }
+    , remove = function (name) {
+        if (name) {
+            delete injectables[name];
+        } else {
+            delete injectables;
+            injectables = {};
+        }
     };
 
     module.exports = {configure: configure, inject: inject, remove: remove};

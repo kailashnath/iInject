@@ -50,11 +50,13 @@ suite('di#remove', function () {
     test('should remove an entry from injectables list', function () {
         di.configure(function () {
             this.bind('number', 100);
+            this.bind('name', 'kailash');
         });
         assert.strictEqual(100, di.inject('number'));
 
         di.remove('number');
         assert.strictEqual('number', di.inject('number'));
+        assert.strictEqual('kailash', di.inject('name'));
     });
 
     test('should remove all entries from injectables list if no param is given', function () {
