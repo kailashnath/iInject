@@ -34,12 +34,14 @@
                 return obj;
             }
             if (isNode) {
+                var exists = false;
                 try {
-                    return require(name);
+                    exists = require.resolve(name);
                 } catch (e) {
-                    if (e.code !== 'MODULE_NOT_FOUND')
-                        throw e;
+                    exists = false;
                 }
+                if (exists)
+                    return require(name);
             }
 
             return name;

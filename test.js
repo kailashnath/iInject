@@ -166,6 +166,7 @@ suite('di#inject', function () {
     test('should inject from node_modules if the injectable isn\'t configured in nodejs env',
             function () {
                 assert.strictEqual(require('fs'), di.inject('fs'));
+                assert.strictEqual('dummy', di.inject('dummy'));
             });
 
 });
