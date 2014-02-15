@@ -44,7 +44,7 @@
                     return require(name);
             }
 
-            return name;
+            return null;
         };
 
     function Injectable() {
@@ -130,7 +130,7 @@
         },
         inject = function (name) {
             var resolved = resolve.call(root, name);
-            if (resolved.constructor === Injectable) {
+            if (resolved && resolved.constructor === Injectable) {
                 return resolved.invoke();
             }
             return resolved;

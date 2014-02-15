@@ -45,7 +45,7 @@ suite('di#configure', function () {
 
         di.configure(function () {
         });
-        assert.strictEqual('name', di.inject('name'));
+        assert.strictEqual(null, di.inject('name'));
     });
 });
 
@@ -58,7 +58,7 @@ suite('di#remove', function () {
         assert.strictEqual(100, di.inject('number'));
 
         di.remove('number');
-        assert.strictEqual('number', di.inject('number'));
+        assert.strictEqual(null, di.inject('number'));
         assert.strictEqual('kailash', di.inject('name'));
     });
 
@@ -71,8 +71,8 @@ suite('di#remove', function () {
         assert.strictEqual('bangalore', di.inject('location'));
         di.remove();
 
-        assert.strictEqual('location', di.inject('location'));
-        assert.strictEqual('name', di.inject('name'));
+        assert.strictEqual(null, di.inject('location'));
+        assert.strictEqual(null, di.inject('name'));
     });
 });
 
@@ -166,7 +166,6 @@ suite('di#inject', function () {
     test('should inject from node_modules if the injectable isn\'t configured in nodejs env',
             function () {
                 assert.strictEqual(require('fs'), di.inject('fs'));
-                assert.strictEqual('dummy', di.inject('dummy'));
             });
 
 });
