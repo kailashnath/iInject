@@ -1,6 +1,10 @@
 (function () {
 
     var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m,
+        isNode = (typeof module !== 'undefined') && module.exports,
+        isValid = function (val) {
+            return val && val !== '';
+        },
         bind = function (name, func, options) {
             if (!(name && func) || typeof(name) !== 'string') {
                     return null;
@@ -29,6 +33,15 @@
                 }
                 return obj;
             }
+            if (isNode) {
+                try {
+                    return require(name);
+                } catch (e) {
+                    if (e.code !== 'MODULE_NOT_FOUND')
+                        throw e;
+                }
+            }
+
             return name;
         };
 
@@ -57,8 +70,7 @@
                 return dependencies;
             }
 
-            var args = match[1].split(',');
-
+            var args = match[1].split(',').filter(isValid);
             for (var i = 0; i < args.length; i++) {
                 var dependency = resolve.call(this, args[i]),
                     value = null;

@@ -163,5 +163,10 @@ suite('di#inject', function () {
         assert.strictEqual('local', di.inject('user').name);
     });
 
+    test('should inject from node_modules if the injectable isn\'t configured in nodejs env',
+            function () {
+                assert.strictEqual(require('fs'), di.inject('fs'));
+            });
+
 });
 
