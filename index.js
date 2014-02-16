@@ -21,7 +21,7 @@
             }
 
             var injectable = new Injectable();
-            injectable.name = name;
+            injectable.name = name.trim();
             injectable.func = func;
             injectable.options = options;
             injectable.parent = this;
@@ -30,7 +30,7 @@
             return injectable;
         },
         resolve = function (name) {
-
+            name = name.trim();
             if (this.injectables) {
                 var obj = this.injectables[name];
                 if (!obj) {

@@ -102,8 +102,9 @@ suite('di#inject', function () {
         this.employee = function (user) {
             this.type = user? 'employee': null;
         };
-        this.developer = function (employee) {
+        this.developer = function (db, employee) {
             this.type = employee? 'developer': null;
+            this.db = db;
         };
 
         this.singleton = function () {
