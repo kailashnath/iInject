@@ -1,5 +1,5 @@
-var assert = require('chai').assert
-,   di = require('./index');
+var assert = require('chai').assert,
+   di = require('./index');
 
 suite('di', function () {
     test('should expose "inject", "remove", and "configure" methods', function () {
@@ -47,6 +47,19 @@ suite('di#configure', function () {
         });
         assert.strictEqual(null, di.inject('name'));
     });
+
+    test('should throw an error if binding a provider which doesn\'t implement get method',
+            function () {
+
+                di.configure(function () {
+                    var self = this;
+                    assert.throw(function () {
+                        self.bind('failProvider', function () {}, {'provider': true});
+                    }, TypeError);
+                });
+
+            }
+    );
 });
 
 suite('di#remove', function () {
@@ -166,6 +179,20 @@ suite('di#inject', function () {
     test('should inject from node_modules if the injectable isn\'t configured in nodejs env',
             function () {
                 assert.strictEqual(require('fs'), di.inject('fs'));
+            });
+
+    test('should call the "get" method if injecting a provider class',
+            function () {
+                var Db = function (name) {
+                    this.name = name;
+                };
+                Db.get = function (name) {
+                    return new Db(name);
+                };
+                di.configure(function () {
+                    this.bind('dbConnectionProvider', Db, {'provider': true});
+                });
+                assert.ok(di.inject('dbConnectionProvider').get);
             });
 
 });

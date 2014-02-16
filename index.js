@@ -14,6 +14,12 @@
                 return null;
             }
 
+            if (options && options.provider) {
+                if (!func.get) {
+                    throw new TypeError("A provider should implement 'get' method");
+                }
+            }
+
             var injectable = new Injectable();
             injectable.name = name;
             injectable.func = func;
@@ -92,7 +98,9 @@
             var func = this.func,
                 options = this.options;
 
-            if (typeof func === "object" || [String, Number].indexOf(func.constructor) > -1) {
+            if (typeof func === "object" || 
+                    (options && options.provider) ||
+                    [String, Number].indexOf(func.constructor) > -1) {
                 return func;
             } else {
                 var isSingleton = options && options.singleton,
