@@ -84,7 +84,7 @@
                     value = null;
 
                 // if dependency is of type Injectable invoke it's dependencies
-                if (dependency.constructor === Injectable) {
+                if (dependency && dependency.constructor === Injectable) {
                     value = dependency.invoke();
                 } else {
                     value = dependency;
