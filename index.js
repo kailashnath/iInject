@@ -10,15 +10,14 @@
                     return null;
             }
 
-            if ([Function, String, Number].indexOf(func.constructor) === -1) {
-                return null;
-            }
-
-            if (options && options.provider) {
+            if (func.constructor === Object || (options && options.provider)) {
                 if (!func.get) {
                     throw new TypeError("A provider should implement 'get' method");
                 }
+            } else if ([Function, String, Number].indexOf(func.constructor) === -1) {
+                return null;
             }
+
 
             var injectable = new Injectable();
             injectable.name = name.trim();
@@ -98,11 +97,9 @@
             var func = this.func,
                 options = this.options;
 
-            if (typeof func === "object" || 
-                    [String, Number].indexOf(func.constructor) > -1) {
+            if ([String, Number].indexOf(func.constructor) > -1) {
                 return func;
             }
-
             else if (options && options.provider) {
                 return func.get();
             } else {

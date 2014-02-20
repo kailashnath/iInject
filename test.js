@@ -210,5 +210,19 @@ suite('di#inject', function () {
                 assert.equal('provider', di.inject('dbConnectionProvider').type);
             });
 
+    test('should call the "get" method if injecting a provider object',
+            function () {
+                var provider = {
+                    get: function () {
+                             return 100;
+                         }
+                };
+                di.configure(function () {
+                    this.bind('intProvider', provider, {provider: true});
+                });
+
+                assert.equal(100, di.inject('intProvider'));
+            });
+
 });
 
