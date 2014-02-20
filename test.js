@@ -37,14 +37,28 @@ suite('di#configure', function () {
         });
     });
 
-    test('should always clear the previous mapping when invoked', function () {
+    test('should not clear the previous mapping but update when called again', function () {
+        di.configure(function () {
+            this.bind('name', 'kailash');
+            this.bind('country', 'India');
+        });
+        assert.strictEqual('kailash', di.inject('name'));
+
+        di.configure(function () {
+            this.bind('name', 'Bruce Lee');
+        });
+        assert.strictEqual('Bruce Lee', di.inject('name'));
+        assert.strictEqual('India', di.inject('country'));
+    });
+
+    test('should always clear the previous mapping when invoked with option "flush == true"', function () {
         di.configure(function () {
             this.bind('name', 'kailash');
         });
         assert.strictEqual('kailash', di.inject('name'));
 
         di.configure(function () {
-        });
+        }, {flush: true});
         assert.strictEqual(null, di.inject('name'));
     });
 

@@ -132,8 +132,10 @@
     }
 
     var root = new Injectable(),
-        configure = function (func) {
-            remove();
+        configure = function (func, options) {
+            if (options && options.flush === true) {
+                remove();
+            }
             func.call(root);
         },
         inject = function (name) {
