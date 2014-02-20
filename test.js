@@ -198,16 +198,16 @@ suite('di#inject', function () {
 
     test('should call the "get" method if injecting a provider class',
             function () {
-                var Db = function (name) {
-                    this.name = name;
+                var Db = function () {
+                    this.type = 'provider';
                 };
-                Db.get = function (name) {
-                    return new Db(name);
+                Db.get = function () {
+                    return new Db();
                 };
                 di.configure(function () {
                     this.bind('dbConnectionProvider', Db, {'provider': true});
                 });
-                assert.ok(di.inject('dbConnectionProvider').get);
+                assert.equal('provider', di.inject('dbConnectionProvider').type);
             });
 
 });

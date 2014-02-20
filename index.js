@@ -99,9 +99,12 @@
                 options = this.options;
 
             if (typeof func === "object" || 
-                    (options && options.provider) ||
                     [String, Number].indexOf(func.constructor) > -1) {
                 return func;
+            }
+
+            else if (options && options.provider) {
+                return func.get();
             } else {
                 var isSingleton = options && options.singleton,
                     singletons = this.singletons,
