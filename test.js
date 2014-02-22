@@ -7,6 +7,13 @@ suite('di', function () {
         assert.ok(di.configure, 'configure should be exposed');
         assert.ok(di.remove, 'remove should be exposed');
     });
+
+    test('should expose a provider method "get"', function () {
+        assert.ok(di.get);
+        assert.ok(di.get(), 'inject');
+        assert.ok(di.get(), 'configure');
+        assert.ok(di.get(), 'remove');
+    });
 });
 
 

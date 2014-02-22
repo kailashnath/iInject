@@ -147,7 +147,11 @@
         },
         remove = function (name) {
             root.release(name);
-        };
+        },
 
-    module.exports = {configure: configure, inject: inject, remove: remove};
+        exports = {configure: configure, inject: inject, remove: remove, get: function () {
+            return exports;
+        }};
+
+    module.exports = exports;
 }());
