@@ -81,6 +81,15 @@ suite('di#configure', function () {
 
             }
     );
+
+    test('should throw an error if provider "get" is not a function', function () {
+            di.configure(function () {
+                var self = this;
+                assert.throw(function () {
+                    self.bind('invalidGetProvider', {get: 'fail'}, {'provider': true});
+                }, TypeError);
+            });
+        });
 });
 
 suite('di#remove', function () {

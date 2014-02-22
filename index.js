@@ -11,7 +11,7 @@
             }
 
             if (func.constructor === Object || (options && options.provider)) {
-                if (!func.get) {
+                if (!func.get || func.get.constructor !== Function) {
                     throw new TypeError("A provider should implement 'get' method");
                 }
             } else if ([Function, String, Number].indexOf(func.constructor) === -1) {
