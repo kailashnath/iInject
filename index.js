@@ -110,7 +110,7 @@
                 return func;
             }
             else if (options && options.provider) {
-                return func.get();
+                return func.get.call(exports);
             } else {
                 var isSingleton = options && options.singleton,
                     singletons = this.singletons,

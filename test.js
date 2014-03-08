@@ -240,6 +240,21 @@ suite('di#inject', function () {
                 assert.equal(100, di.inject('intProvider'));
             });
 
+    test('should pass injectable scope when called for get', function () {
+        var Connection = function (name) {
+            this.name = name;
+        };
+        Connection.get = function () {
+            return new Connection(this.inject('name'));
+        };
+        di.configure(function () {
+            this.bind('name', 'test');
+            this.bind('dbConnection', Connection, {provider: true});
+        });
+
+        assert.equal(di.inject('dbConnection').name, 'test');
+    });
+
 });
 
 suite('di#utils', function () {
