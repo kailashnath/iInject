@@ -245,7 +245,7 @@ suite('di#inject', function () {
 suite('di#utils', function () {
     test('.requireAsProvider() should wrap any nodejs module as provider', function () {
         di.configure(function () {
-            this.bind('fs', di.utils.asProvider('fs'), {provider: true});
+            this.bind('fs', di.utils.asProvider(require('fs')), {provider: true});
         }, {flush: true});
 
         assert.deepEqual(di.inject('fs'), require('fs'));

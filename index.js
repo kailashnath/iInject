@@ -55,7 +55,7 @@
             asProvider: function (module) {
                return {
                    get: function () {
-                       return require(module);
+                       return module;
                    }
                };
         }};
