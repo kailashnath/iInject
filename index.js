@@ -50,7 +50,16 @@
             }
 
             return null;
-        };
+        },
+        utils = {
+            asProvider: function (module) {
+               return {
+                   get: function () {
+                       return require(module);
+                   }
+               };
+        }};
+
 
     function Injectable() {
         this.injectables = {};
@@ -151,7 +160,7 @@
 
         exports = {configure: configure, inject: inject, remove: remove, get: function () {
             return exports;
-        }};
+        }, utils: utils};
 
     module.exports = exports;
 }());

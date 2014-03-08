@@ -2,7 +2,7 @@ var assert = require('chai').assert,
    di = require('./index');
 
 suite('di', function () {
-    test('should expose "inject", "remove", and "configure" methods', function () {
+    test('should expose "inject", "remove" and "configure" methods', function () {
         assert.ok(di.inject, 'inject should be exposed');
         assert.ok(di.configure, 'configure should be exposed');
         assert.ok(di.remove, 'remove should be exposed');
@@ -242,3 +242,12 @@ suite('di#inject', function () {
 
 });
 
+suite('di#utils', function () {
+    test('.requireAsProvider() should wrap any nodejs module as provider', function () {
+        di.configure(function () {
+            this.bind('fs', di.utils.asProvider('fs'), {provider: true});
+        }, {flush: true});
+
+        assert.deepEqual(di.inject('fs'), require('fs'));
+    });
+});
