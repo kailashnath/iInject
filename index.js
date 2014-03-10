@@ -28,25 +28,25 @@
             this.injectables[name] = injectable;
             return injectable;
         },
-        resolve = function (name) {
+        resolve = function (name, overrides) {
             name = name.trim();
+            var overide = overrides && overrides[name];
+
             if (this.injectables) {
-                var obj = this.injectables[name];
+                var obj = overide || this.injectables[name];
                 if (!obj) {
                     // if not found in current scope go up in the tree
-                    return resolve.call(this.parent, name);
+                    return resolve.call(this.parent, name, overrides);
                 }
                 return obj;
             }
             if (isNode) {
                 var exists = false;
                 try {
-                    exists = require.resolve(name);
+                    return overide || require(name);
                 } catch (e) {
                     exists = false;
                 }
-                if (exists)
-                    return require(name);
             }
 
             return null;
@@ -78,7 +78,7 @@
             }
         };
 
-        this.resolveDependencies = function () {
+        this.resolveDependencies = function (overrides) {
             var match = this.func.toString().match(FN_ARGS),
                 dependencies = [];
 
@@ -88,7 +88,7 @@
 
             var args = match[1].split(',').filter(isValid);
             for (var i = 0; i < args.length; i++) {
-                var dependency = resolve.call(this, args[i]),
+                var dependency = resolve.call(this, args[i], overrides),
                     value = null;
 
                 // if dependency is of type Injectable invoke it's dependencies
@@ -102,7 +102,7 @@
             return dependencies;
         };
 
-        this.invoke = function () {
+        this.invoke = function (overrides) {
             var func = this.func,
                 options = this.options;
 
@@ -110,6 +110,7 @@
                 return func;
             }
             else if (options && options.provider) {
+                // call the get method with scope of iinject, hence the exports
                 return func.get.call(exports);
             } else {
                 var isSingleton = options && options.singleton,
@@ -123,7 +124,7 @@
                         return inst;
                     }
                 }
-                var dependencies = this.resolveDependencies(),
+                var dependencies = this.resolveDependencies(overrides),
                     scope = Object.create(func.prototype);
 
                 func.apply(scope, dependencies);
@@ -147,10 +148,10 @@
             }
             func.call(root);
         },
-        inject = function (name) {
-            var resolved = resolve.call(root, name);
+        inject = function (name, overrides) {
+            var resolved = resolve.call(root, name, overrides);
             if (resolved && resolved.constructor === Injectable) {
-                return resolved.invoke();
+                return resolved.invoke(overrides);
             }
             return resolved;
         },

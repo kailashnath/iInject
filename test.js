@@ -255,6 +255,26 @@ suite('di#inject', function () {
         assert.equal(di.inject('dbConnection').name, 'test');
     });
 
+    test('should inject the overriden arguments which are passed as param when asked for injection', function () {
+        var Bank = function (name) {
+            this.name = name;
+        };
+
+        di.configure(function () {
+            this.bind('name', 'BOA');
+            this.bind('bank', Bank);
+        });
+
+        assert.equal(di.inject('bank').name, 'BOA');
+        assert.equal(di.inject('bank', {name: 'Citi'}).name, 'Citi');
+    });
+
+    test('should inject the overriden argument if trying to load fron nodejs scope', function () {
+        di.configure(function () {
+        }, {flush: true});
+        assert.equal(di.inject('fromNode', {fromNode: 'test'}), 'test');
+    });
+
 });
 
 suite('di#utils', function () {
